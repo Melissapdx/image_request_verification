@@ -17,34 +17,44 @@ def get_directory_files():
 
 def tpb_url_builder():
 	"""Construct url for request based on assets location"""
-	tpb_home_links = ['1UP','Overlay','SMB']
+	tpb_home_links = ['HP','1UP','Overlay','SMB']
 
 	files_w_location = []
 	files_to_check = file_handler()
 
 	for file in files_to_check:
-	# if contains subnav add /subnav
+		#if contains subnav add /subnav
 		if re.search('subnav',file):
 			tp_file_1 = '/subnav/'+file
 			files_w_location.append(tp_file_1)
-	#if contains HP and m add /home/mobile
-		if re.search('(HP)(m)',file):
-			print (file)
-	#if contains HP,hero, 1UP SMB add /home
-		if any(x in file for x in tpb_home_links):
-			tp_file = '/home/'+file
-			files_w_location.append(tp_file)
-		else:
-			print('nope')
-	
-	#if contains SO add /sales
-	#if contains TMB or CAT add /store
+			
+		#if contains HP and m add /home/mobile
+		if re.search(r'(_HP_)+.*(_m_)+',file):
+			tp_file_2 = '/home/mobile/'+file
+			files_w_location.append(tp_file_2)
+			
+		#if contains HP,hero, 1UP SMB add /home
+		if any(x in file for x in tpb_home_links) and not re.search('_m_',file):
+			tp_file_3 = '/home/'+file
+			files_w_location.append(tp_file_3)
+			
+		#if contains SO add /sales
+		if re.search(r'SO',file):
+			tp_file_4 = '/sales/'+file
+			files_w_location.append(tp_file_4)
+			
+		#if contains TMB or CAT add /store
+		if re.search(r'(_TMB_)+.*|(_CAT_)+',file):
+			tp_file_5 = '/store/'+file
+			files_w_location.append(tp_file_5)
+			
+
 	return files_w_location
-	
 	
 
 def filter_directory_by_type():
 	"""Filter directory based whether it's a SFLY, TinyPrints or TWS asset"""
+
 	directory = get_user_input(user_input)
 	if re.search('TPB',directory):
 		tpb_files_final = []
@@ -54,11 +64,11 @@ def filter_directory_by_type():
 			final_file = url_start + file
 			tpb_files_final.append(final_file)
 		return tpb_files_final
-	if re.search('TWS',directory):
-		print('Wedding shop')
+	# if re.search('TWS',directory):
+	# 	print('Wedding shop')
 		
-	else:
-		print('Shutterfly')
+	# else:
+	# 	print('Shutterfly')
 	
 
 def file_handler():
@@ -71,14 +81,36 @@ def file_handler():
 	return filtered_files
 
 def make_request():
+	"""Retrieve files in directory and check status """
+	requested_files = {}
 	final_files = filter_directory_by_type()
 	image_url = 'http://cdn-image.staticsfly.com/i/'
 	for file in final_files:
-		 url_to_check = image_url + file
-		 # r = requests.get(url_to_check)
-		 # print (r.status_code)
+		url_to_check = image_url + file
+		r = requests.get(url_to_check)
+		if r.status_code == 200:
+		 	if "found" not in requested_files:
+		 		requested_files["found"] = [url_to_check]
+		 	else:
+		 		requested_files["found"].append(url_to_check)
+		if r.status_code == 404:
+			if "not found" not in requested_files:
+				requested_files["not found"] = [url_to_check]
+			else:
+				requested_files["not found"].append(url_to_check)
+	return requested_files
+
+def print_requested_files(): 
+	""" Print out all files that are requested with total files and if was success"""
+	requested_files = make_request()
+	files_found = len(requested_files["found"])
+	print ('{} files found'.format(files_found))
+	for key,value in requested_files.items():
+		for x in value:
+			print(x)
+	return 0
+
 
 user_input = input("Copy in the folder name:")
 get_user_input(user_input)
-print(tpb_url_builder())
-# print(make_request())
+print_requested_files()
