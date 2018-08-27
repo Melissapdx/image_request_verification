@@ -83,7 +83,7 @@ def tws_url_builder():
 
 
 def sfly_url_builder():
-
+    """construct url's for sfly images"""
     sfly_home_links = ['HP', '1UP', 'Overlay', 'SMB', 'hero']
     files_w_location = []
     files_to_check = file_handler()
@@ -182,8 +182,8 @@ def print_requested_files(request_key):
             print('{} files found'.format(files_found))
             for key, value in requested_files.items():
                 if key == "found":
-                    for x in value:
-                        print(x)
+                    for file_name in value:
+                        print(file_name)
             return 0
         except KeyError:
             print("no files found from that folder")
@@ -193,8 +193,8 @@ def print_requested_files(request_key):
             print("{} files not found, check the image path " .format(files_found))
             for key, value in requested_files.items():
                 if key == "not found":
-                    for x in value:
-                        print(x)
+                    for file_name_404 in value:
+                        print(file_name_404)
             return 0
         except KeyError:
             print("all files were found")
