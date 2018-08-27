@@ -7,14 +7,12 @@ def get_user_input(user_input):
     """Reads in user folder name and build directory name"""
     directory_name = "Y:/RWC/Melissa/Projects/Promos/" + user_input + "/final"
     return directory_name
-
-
+   
 def get_directory_files():
     """get all files from the directory that the user selected"""
     directory = get_user_input(user_input)
     arr_of_files = os.listdir(directory)
     return arr_of_files
-
 
 def tpb_url_builder():
     """Construct url for TPB request based on assets location"""
@@ -82,6 +80,8 @@ def tws_url_builder():
 
     return files_w_location
 #not working
+
+
 def sfly_url_builder():
 
     sfly_home_links = ['HP', '1UP', 'Overlay', 'SMB', 'hero']
@@ -101,7 +101,7 @@ def sfly_url_builder():
         elif re.search(r'SO', file):
             sfly_file_4 = '/sales/' + file
             files_w_location.append(sfly_file_4)
- 
+
         elif re.search(r'(_TMB_)+.*|(_CAT_)+', file):
             sfly_file_5 = '/store/' + file
             files_w_location.append(sfly_file_5)
@@ -114,35 +114,32 @@ def sfly_url_builder():
     return files_w_location
 
 
+def filter_directory(path, url_builder):
+    """filter directory based on path and url"""
+    tws_files_final = []
+    url_start = path
+    files_to_add_path = url_builder
+    for file in files_to_add_path:
+        final_file = url_start + file
+        tws_files_final.append(final_file)
+    return tws_files_final
+
+
 def filter_directory_by_type():
     """Filter directory based whether it's a SFLY, TinyPrints or TWS asset"""
     directory = get_user_input(user_input)
     if re.search('TWS', directory):
-        tws_files_final = []
-        url_start = "/tws"
-        files_to_add_path = tws_url_builder()
-        for file in files_to_add_path:
-            final_file = url_start + file
-            tws_files_final.append(final_file)
-        return tws_files_final
+        tws_directory = filter_directory("/tws", tws_url_builder())
+        return tws_directory
 
-    elif re.search('TPB', directory):
-        tpb_files_final = []
-        url_start = "/tp"
-        files_to_add_path = tpb_url_builder()
-        for file in files_to_add_path:
-            final_file = url_start + file
-            tpb_files_final.append(final_file)
-        return tpb_files_final
+    elif re.search('TPB',directory):
+        tpb_directory = filter_directory("/tp",tpb_url_builder())
+        return tpb_directory
 
     else:
-        sfly_files_final = []
-        url_start = "/sfly"
-        files_to_add_path = sfly_url_builder()
-        for file in files_to_add_path:
-            final_file = url_start + file
-            sfly_files_final.append(final_file)
-        return sfly_files_final
+        sfly_directory = filter_directory("/sfly",sfly_url_builder())
+        return sfly_directory
+
 
 def file_handler():
     """Iterate through files and filter out jpegs"""
@@ -178,13 +175,15 @@ def make_request():
 def print_requested_files(request_key):
     """ Print out all files that are requested with total files and if was success"""
     requested_files = make_request()
+
     if request_key == "found":
         try:
             files_found = len(requested_files[request_key])
             print('{} files found'.format(files_found))
             for key, value in requested_files.items():
-                for x in value:
-                    print(x)
+                if key == "found":
+                    for x in value:
+                        print(x)
             return 0
         except KeyError:
             print("no files found from that folder")
@@ -193,15 +192,15 @@ def print_requested_files(request_key):
             files_found = len(requested_files[request_key])
             print("{} files not found, check the image path " .format(files_found))
             for key, value in requested_files.items():
-                for x in value:
-                    print(x)
+                if key == "not found":
+                    for x in value:
+                        print(x)
             return 0
         except KeyError:
             print("all files were found")
- 
 
 
-user_input = input("Copy in the folder name:")
+user_input = input("Copy in the main folder name:")
 get_user_input(user_input)
 print_requested_files("found")
 print_requested_files("not found")
