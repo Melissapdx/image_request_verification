@@ -5,8 +5,17 @@ import re
 
 def get_user_input(user_input):
     """Reads in user folder name and build directory name"""
-    directory_name = "Y:/RWC/Melissa/Projects/Promos/" + user_input + "/final"
-    return directory_name
+    directory_name = "Y:/RWC/Melissa/Projects/Promos/" + user_input
+   
+
+    #use os walk with user_input to get subfolder and pass value into get directory files
+    for folderName, subfolders, filenames in os.walk(directory_name):
+
+        for subfolder in subfolders:
+           subfolder = subfolder
+    directory = directory_name + "/" + subfolder
+    
+    return directory
    
 def get_directory_files():
     """get all files from the directory that the user selected"""
@@ -116,13 +125,13 @@ def sfly_url_builder():
 
 def filter_directory(path, url_builder):
     """filter directory based on path and url"""
-    tws_files_final = []
+    final_files = []
     url_start = path
     files_to_add_path = url_builder
     for file in files_to_add_path:
         final_file = url_start + file
-        tws_files_final.append(final_file)
-    return tws_files_final
+        final_files.append(final_file)
+    return final_files
 
 
 def filter_directory_by_type():
@@ -137,7 +146,7 @@ def filter_directory_by_type():
         return tpb_directory
 
     else:
-        sfly_directory = filter_directory("/sfly",sfly_url_builder())
+        sfly_directory = filter_directory("/",sfly_url_builder())
         return sfly_directory
 
 
