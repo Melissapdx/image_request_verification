@@ -4,17 +4,14 @@ import re
 
 
 def get_user_input(user_input):
-    """Reads in user folder name and build directory name"""
-    directory_name = "Y:/RWC/Melissa/Projects/Promos/" + user_input
+    """Reads in folder name from user input and build directory path"""
    
+    directory_name = "Z:/RWC/Melissa/Projects/Promos/" 
+    file_path = directory_name + user_input
+    dirs = os.listdir(file_path)
+    user_dir = dirs[-1]
+    directory = file_path + "/" + user_dir
 
-    #use os walk with user_input to get subfolder and pass value into get directory files
-    for folderName, subfolders, filenames in os.walk(directory_name):
-
-        for subfolder in subfolders:
-           subfolder = subfolder
-    directory = directory_name + "/" + subfolder
-    
     return directory
    
 def get_directory_files():
@@ -22,6 +19,7 @@ def get_directory_files():
     directory = get_user_input(user_input)
     arr_of_files = os.listdir(directory)
     return arr_of_files
+
 
 def tpb_url_builder():
     """Construct url for TPB request based on assets location"""
@@ -61,7 +59,7 @@ def tpb_url_builder():
 
 def tws_url_builder():
     """Construct url for TPB request based on assets location"""
-    tpb_home_links = ['HP', '1UP', 'Overlay', 'SMB', 'hero']
+    tpb_home_links = ['HP', '1UP', 'Overlay', 'SMB',]
     files_w_location = []
     files_to_check = file_handler()
 
@@ -78,7 +76,7 @@ def tws_url_builder():
             files_w_location.append(tp_file_3)
 
         # mobile assests other than HP
-        elif re.search(r'_m_', file) and not re.search('_HP_', file):
+        elif re.search(r'_m_', file) and not re.search(r'_HP_|(_TMB_)+.*|(_CAT_)+', file):
             tws_file_1 = '/mobile/' + file
             files_w_location.append(tws_file_1)
 
@@ -99,26 +97,30 @@ def sfly_url_builder():
 
     for file in files_to_check:
         if re.search(r'(_HP_)+.*(_m_)+', file):
-            sfly_file_1 = '/mobile/' + file
+            sfly_file_1 = 'mobile/' + file
             files_w_location.append(sfly_file_1)
 
         # mobile assests other than HP
-        elif re.search(r'_m_', file) and not re.search('_HP_', file):
-            sfly_file_3 = '/mobile/sales/' + file
+        elif re.search(r'_m_', file) and not re.search(r'_HP_|(_TMB_)+.*|(_CAT_)+', file):
+            sfly_file_3 = 'mobile/sales/' + file
             files_w_location.append(sfly_file_3)
 
         elif re.search(r'SO', file):
-            sfly_file_4 = '/sales/' + file
+            sfly_file_4 = 'sales/' + file
             files_w_location.append(sfly_file_4)
 
         elif re.search(r'(_TMB_)+.*|(_CAT_)+', file):
-            sfly_file_5 = '/store/' + file
+            sfly_file_5 = 'store/' + file
             files_w_location.append(sfly_file_5)
 
         # if contains HP,hero, 1UP SMB add /home
         elif any(x in file for x in sfly_home_links) and not re.search('_m_', file):
-            sfly_file_2 = '/home/' + file
+            sfly_file_2 = 'home/' + file
             files_w_location.append(sfly_file_2)
+
+        else:
+            sfly_file_6 = 'store/' + file
+            files_w_location.append(sfly_file_6)
 
     return files_w_location
 
@@ -137,7 +139,7 @@ def filter_directory(path, url_builder):
 def filter_directory_by_type():
     """Filter directory based whether it's a SFLY, TinyPrints or TWS asset"""
     directory = get_user_input(user_input)
-    if re.search('TWS', directory):
+    if re.search('TWS',directory):
         tws_directory = filter_directory("/tws", tws_url_builder())
         return tws_directory
 
@@ -152,16 +154,18 @@ def filter_directory_by_type():
 
 def file_handler():
     """Iterate through files and filter out jpegs"""
+    #move harcoded variable to top
     filtered_files = []
     files = get_directory_files()
     for file in files:
-        if file.endswith('.png') or file.endswith('.jpg'):
+        if file.endswith('.png') or file.endswith('.jpg') or file.endswith('.gif'):
             filtered_files.append(file)
     return filtered_files
 
 
 def make_request():
     """Retrieve files in directory and check status """
+    #make statments easier to read by making positive, removing not in
     requested_files = {}
     final_files = filter_directory_by_type()
     image_url = 'http://cdn-image.staticsfly.com/i'
@@ -184,7 +188,7 @@ def make_request():
 def print_requested_files(request_key):
     """ Print out all files that are requested with total files and if was success"""
     requested_files = make_request()
-
+    #revist the return 0
     if request_key == "found":
         try:
             files_found = len(requested_files[request_key])
