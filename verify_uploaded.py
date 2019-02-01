@@ -165,7 +165,7 @@ def file_handler():
 
 def make_request():
     """Retrieve files in directory and check status """
-    #make statments easier to read by making positive, removing not in
+  
     requested_files = {}
     final_files = filter_directory_by_type()
     image_url = 'http://cdn-image.staticsfly.com/i'
@@ -173,22 +173,23 @@ def make_request():
         url_to_check = image_url + file
         r = requests.get(url_to_check)
         if r.status_code == 200:
-            if "found" not in requested_files:
-                requested_files["found"] = [url_to_check]
-            else:
+            if "found" in requested_files:
                 requested_files["found"].append(url_to_check)
-        if r.status_code == 404:
-            if "not found" not in requested_files:
-                requested_files["not found"] = [url_to_check]
             else:
+                requested_files["found"] = [url_to_check]
+               
+        if r.status_code == 404:
+            if "not found" in requested_files:
                 requested_files["not found"].append(url_to_check)
+            else:
+                requested_files["not found"] = [url_to_check]
     return requested_files
 
 
 def print_requested_files(request_key):
     """ Print out all files that are requested with total files and if was success"""
     requested_files = make_request()
-    #revist the return 0
+  
     if request_key == "found":
         try:
             files_found = len(requested_files[request_key])
